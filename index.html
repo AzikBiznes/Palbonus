@@ -2,17 +2,62 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <title>Palbonus - Tezliklə</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palbonus | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { text-align: center; border: 1px solid #334155; padding: 40px; border-radius: 20px; background: #1e293b; }
-        h1 { color: #eab308; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
     </style>
 </head>
-<body>
-    <div class="box">
-        <h1>🪙 Palbonus.com</h1>
-        <p>Sistem hazırlanır... Tezliklə qazanmağa başlayacağıq!</p>
+<body class="p-6">
+    <div class="max-w-md mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-yellow-500">PALBONUS</h1>
+            <div class="bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+                <span class="text-sm text-slate-400">ID: 88291</span>
+            </div>
+        </div>
+
+        <div class="gold-gradient p-6 rounded-3xl shadow-2xl mb-6 shadow-yellow-500/20">
+            <p class="text-yellow-100 text-sm">Ümumi Balans</p>
+            <div class="flex items-center gap-3 mt-1">
+                <span class="text-4xl font-bold">1,250.00</span>
+                <span class="text-xl font-semibold opacity-80 uppercase text-white">PLC</span>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 mb-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="font-semibold text-white">Gündəlik Bonus</h3>
+                    <p class="text-xs text-slate-400">Hər gün daxil ol və qazan</p>
+                </div>
+                <button onclick="claimBonus()" id="bonusBtn" class="bg-yellow-500 text-slate-900 px-4 py-2 rounded-xl font-bold text-sm active:scale-95 transition-all">GÖTÜR</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mt-8">
+            <button class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center hover:bg-slate-700 transition">
+                <div class="text-2xl mb-1">📥</div>
+                <div class="text-xs">Daxil Et</div>
+            </button>
+            <button class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center hover:bg-slate-700 transition">
+                <div class="text-2xl mb-1">📤</div>
+                <div class="text-xs">Çıxarış</div>
+            </button>
+        </div>
     </div>
+
+    <script>
+        function claimBonus() {
+            const btn = document.getElementById('bonusBtn');
+            btn.innerText = 'GÖTÜRÜLDÜ';
+            btn.classList.replace('bg-yellow-500', 'bg-green-500');
+            btn.disabled = true;
+            alert('Təbriklər! +10 PLC balansınıza əlavə edildi.');
+        }
+    </script>
 </body>
 </html>
