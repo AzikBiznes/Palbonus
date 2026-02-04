@@ -3,60 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palbonus | Dashboard</title>
+    <title>Palbonus | Crypto Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; }
-        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #0b0f1a; color: white; overflow-x: hidden; }
+        .cyber-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .gold-glow { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+        .hidden { display: none; }
+        .coin-spin { animation: rotate 5s linear infinite; }
+        @keyframes rotate { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-md mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-yellow-500">PALBONUS</h1>
-            <div class="bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
-                <span class="text-sm text-slate-400">ID: 88291</span>
-            </div>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="authSection" class="w-full max-w-md cyber-card p-8 rounded-3xl gold-glow">
+        <h2 class="text-3xl font-bold text-yellow-500 mb-6 text-center tracking-widest uppercase" style="font-family: 'Orbitron';">Palbonus</h2>
+        <div class="space-y-4">
+            <input type="text" placeholder="İstifadəçi adı" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:outline-none focus:border-yellow-500 transition">
+            <input type="password" placeholder="Şifrə" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:outline-none focus:border-yellow-500 transition">
+            <button onclick="login()" class="w-full bg-yellow-500 text-black font-bold p-4 rounded-xl hover:bg-yellow-400 transition active:scale-95">DAXİL OL</button>
+            <p class="text-center text-sm text-slate-400">Hesabınız yoxdur? <span class="text-yellow-500 cursor-pointer">Qeydiyyatdan keçin</span></p>
+        </div>
+    </div>
+
+    <div id="dashboardSection" class="w-full max-w-md hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold text-yellow-500 tracking-wider" style="font-family: 'Orbitron';">PALBONUS</h1>
+            <div class="bg-slate-800 px-4 py-1 rounded-full border border-slate-700 text-xs text-slate-400">ID: 88291</div>
         </div>
 
-        <div class="gold-gradient p-6 rounded-3xl shadow-2xl mb-6 shadow-yellow-500/20">
-            <p class="text-yellow-100 text-sm">Ümumi Balans</p>
-            <div class="flex items-center gap-3 mt-1">
-                <span class="text-4xl font-bold">1,250.00</span>
-                <span class="text-xl font-semibold opacity-80 uppercase text-white">PLC</span>
-            </div>
-        </div>
-
-        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 mb-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="font-semibold text-white">Gündəlik Bonus</h3>
-                    <p class="text-xs text-slate-400">Hər gün daxil ol və qazan</p>
+        <div class="cyber-card p-8 rounded-[2.5rem] text-center mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🪙</div>
+            <div class="flex flex-col items-center mb-4">
+                <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mb-4 gold-glow coin-spin">
+                    <span class="text-4xl">P</span>
                 </div>
-                <button onclick="claimBonus()" id="bonusBtn" class="bg-yellow-500 text-slate-900 px-4 py-2 rounded-xl font-bold text-sm active:scale-95 transition-all">GÖTÜR</button>
+                <p class="text-slate-400 text-sm">Mövcud Balans</p>
+                <h2 class="text-5xl font-bold mt-1 tracking-tighter text-white">1,250.00 <span class="text-lg text-yellow-500 uppercase">PLC</span></h2>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mt-8">
-            <button class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center hover:bg-slate-700 transition">
-                <div class="text-2xl mb-1">📥</div>
-                <div class="text-xs">Daxil Et</div>
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl border border-yellow-500/20 mb-6 flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold">Gündəlik Bonus</h3>
+                <p class="text-xs text-slate-400 italic">+10 PLC qazanmaq üçün toxun</p>
+            </div>
+            <button onclick="claim()" id="claimBtn" class="bg-yellow-500 text-black px-6 py-2 rounded-xl font-bold text-xs hover:bg-yellow-400 transition">GÖTÜR</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 hover:border-yellow-500 transition group">
+                <span class="block text-2xl group-hover:scale-110 transition">📥</span>
+                <span class="text-xs mt-2 block font-medium">Depozit</span>
             </button>
-            <button class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center hover:bg-slate-700 transition">
-                <div class="text-2xl mb-1">📤</div>
-                <div class="text-xs">Çıxarış</div>
+            <button class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 hover:border-yellow-500 transition group">
+                <span class="block text-2xl group-hover:scale-110 transition">📤</span>
+                <span class="text-xs mt-2 block font-medium">Çıxarış</span>
             </button>
         </div>
     </div>
 
     <script>
-        function claimBonus() {
-            const btn = document.getElementById('bonusBtn');
-            btn.innerText = 'GÖTÜRÜLDÜ';
-            btn.classList.replace('bg-yellow-500', 'bg-green-500');
+        function login() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+        }
+
+        function claim() {
+            const btn = document.getElementById('claimBtn');
+            btn.innerText = 'ALINDI';
+            btn.classList.replace('bg-yellow-500', 'bg-green-600');
+            btn.classList.add('text-white');
             btn.disabled = true;
-            alert('Təbriklər! +10 PLC balansınıza əlavə edildi.');
+            alert('Təbriklər! Gündəlik 10 PLC balansınıza əlavə olundu.');
         }
     </script>
 </body>
