@@ -3,81 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palbonus | Crypto Platform</title>
+    <title>Palbonus | Telegram Mini App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDAd8fquXNqBsz-KZalksvgK_QGGtd_T1U",
+            authDomain: "palbonus-fd779.firebaseapp.com",
+            projectId: "palbonus-fd779",
+            storageBucket: "palbonus-fd779.firebasestorage.app",
+            messagingSenderId: "840105888876",
+            appId: "1:840105888876:web:e139aa7f90837410ce9c49"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const tg = window.Telegram.WebApp;
+
+        tg.expand(); // Saytı tam ekran edir
+
+        async function initApp() {
+            const user = tg.initDataUnsafe?.user || { id: "test_user", first_name: "Qonaq" };
+            const userRef = doc(db, "users", user.id.toString());
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                await setDoc(userRef, {
+                    name: user.first_name,
+                    balance: 0,
+                    id: user.id
+                });
+                renderUI(user.id, user.first_name, 0);
+            } else {
+                const data = userSnap.data();
+                renderUI(user.id, data.name, data.balance);
+            }
+        }
+
+        function renderUI(id, name, balance) {
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userId').innerText = `ID: ${id}`;
+            document.getElementById('userBalance').innerText = balance.toFixed(2);
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+        }
+
+        window.claimBonus = async () => {
+            const user = tg.initDataUnsafe?.user || { id: "test_user" };
+            const userRef = doc(db, "users", user.id.toString());
+            await updateDoc(userRef, { balance: increment(10) });
+            
+            const newSnap = await getDoc(userRef);
+            document.getElementById('userBalance').innerText = newSnap.data().balance.toFixed(2);
+            alert("Təbriklər! +10 PLC balansınıza əlavə edildi.");
+        };
+
+        initApp();
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background: #0b0f1a; color: white; overflow-x: hidden; }
-        .cyber-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(245, 158, 11, 0.2); }
-        .gold-glow { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
-        .hidden { display: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        body { background: #0b0f1a; color: white; font-family: 'Poppins', sans-serif; }
+        .gold-glow { box-shadow: 0 0 25px rgba(245, 158, 11, 0.2); }
         .coin-spin { animation: rotate 5s linear infinite; }
         @keyframes rotate { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <div id="authSection" class="w-full max-w-md cyber-card p-8 rounded-3xl gold-glow">
-        <h2 class="text-3xl font-bold text-yellow-500 mb-6 text-center tracking-widest uppercase" style="font-family: 'Orbitron';">Palbonus</h2>
-        <div class="space-y-4">
-            <input type="text" placeholder="İstifadəçi adı" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:outline-none focus:border-yellow-500 transition">
-            <input type="password" placeholder="Şifrə" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:outline-none focus:border-yellow-500 transition">
-            <button onclick="login()" class="w-full bg-yellow-500 text-black font-bold p-4 rounded-xl hover:bg-yellow-400 transition active:scale-95">DAXİL OL</button>
-            <p class="text-center text-sm text-slate-400">Hesabınız yoxdur? <span class="text-yellow-500 cursor-pointer">Qeydiyyatdan keçin</span></p>
+    <div id="loading" class="text-yellow-500 font-bold animate-pulse">YÜKLƏNİR...</div>
+
+    <div id="app" class="hidden w-full max-w-md">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-yellow-500 tracking-widest" style="font-family: 'Orbitron';">PALBONUS</h1>
+            <div id="userId" class="bg-slate-800 px-4 py-1 rounded-full text-xs text-slate-400 border border-slate-700"></div>
         </div>
+
+        <div class="bg-slate-900/50 border border-yellow-500/20 p-8 rounded-[3rem] text-center gold-glow mb-6">
+            <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 coin-spin shadow-lg shadow-yellow-500/50">
+                <span class="text-4xl font-bold text-black">P</span>
+            </div>
+            <p class="text-slate-400 text-sm">Xoş gəldin, <span id="userName" class="text-white font-semibold"></span></p>
+            <div class="text-5xl font-bold mt-2"><span id="userBalance">0</span> <span class="text-lg text-yellow-500">PLC</span></div>
+        </div>
+
+        <button onclick="claimBonus()" class="w-full bg-yellow-500 text-black font-bold py-4 rounded-2xl hover:bg-yellow-400 active:scale-95 transition-all mb-4">GÜNDƏLİK BONUSU AL (+10)</button>
     </div>
 
-    <div id="dashboardSection" class="w-full max-w-md hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold text-yellow-500 tracking-wider" style="font-family: 'Orbitron';">PALBONUS</h1>
-            <div class="bg-slate-800 px-4 py-1 rounded-full border border-slate-700 text-xs text-slate-400">ID: 88291</div>
-        </div>
-
-        <div class="cyber-card p-8 rounded-[2.5rem] text-center mb-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🪙</div>
-            <div class="flex flex-col items-center mb-4">
-                <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mb-4 gold-glow coin-spin">
-                    <span class="text-4xl">P</span>
-                </div>
-                <p class="text-slate-400 text-sm">Mövcud Balans</p>
-                <h2 class="text-5xl font-bold mt-1 tracking-tighter text-white">1,250.00 <span class="text-lg text-yellow-500 uppercase">PLC</span></h2>
-            </div>
-        </div>
-
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl border border-yellow-500/20 mb-6 flex justify-between items-center">
-            <div>
-                <h3 class="font-semibold">Gündəlik Bonus</h3>
-                <p class="text-xs text-slate-400 italic">+10 PLC qazanmaq üçün toxun</p>
-            </div>
-            <button onclick="claim()" id="claimBtn" class="bg-yellow-500 text-black px-6 py-2 rounded-xl font-bold text-xs hover:bg-yellow-400 transition">GÖTÜR</button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <button class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 hover:border-yellow-500 transition group">
-                <span class="block text-2xl group-hover:scale-110 transition">📥</span>
-                <span class="text-xs mt-2 block font-medium">Depozit</span>
-            </button>
-            <button class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 hover:border-yellow-500 transition group">
-                <span class="block text-2xl group-hover:scale-110 transition">📤</span>
-                <span class="text-xs mt-2 block font-medium">Çıxarış</span>
-            </button>
-        </div>
-    </div>
-
-    <script>
-        function login() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-        }
-
-        function claim() {
-            const btn = document.getElementById('claimBtn');
-            btn.innerText = 'ALINDI';
-            btn.classList.replace('bg-yellow-500', 'bg-green-600');
-            btn.classList.add('text-white');
-            btn.disabled = true;
-            alert('Təbriklər! Gündəlik 10 PLC balansınıza əlavə olundu.');
-        }
-    </script>
 </body>
 </html>
