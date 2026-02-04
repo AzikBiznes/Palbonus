@@ -3,9 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palbonus | Telegram Mini App</title>
+    <title>Palbonus | Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+        body { background: #05070a; color: #e2e8f0; font-family: 'Poppins', sans-serif; }
+        .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(245, 158, 11, 0.1); }
+        .gold-glow { box-shadow: 0 0 30px rgba(245, 158, 11, 0.15); }
+        .coin-spin { animation: rotate 4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes rotate { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-5">
+
+    <div id="loading" class="mt-20 text-yellow-500 font-bold tracking-tighter animate-pulse uppercase">Sinxronizasiya edilir...</div>
+
+    <div id="app" class="hidden w-full max-w-md">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-yellow-500 tracking-[0.2em]" style="font-family: 'Orbitron';">PALBONUS</h1>
+            <div id="userId" class="bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-lg text-[10px] border border-yellow-500/20 font-mono"></div>
+        </div>
+
+        <div class="glass-card p-10 rounded-[3rem] text-center mb-6 gold-glow relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-500/5 rounded-full blur-3xl"></div>
+            <div class="w-24 h-24 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 coin-spin shadow-[0_0_40px_rgba(245,158,11,0.4)]">
+                <span class="text-5xl font-bold text-black">P</span>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Mövcud Aktivlər</p>
+            <div class="text-5xl font-bold text-white tracking-tighter"><span id="userBalance">0.00</span> <span class="text-lg text-yellow-500 font-light">PLC</span></div>
+        </div>
+
+        <button onclick="claimBonus()" id="claimBtn" class="w-full gold-gradient text-black font-extrabold py-5 rounded-2xl shadow-lg active:scale-95 transition-all mb-6 text-sm uppercase tracking-widest">
+            Gündəlik Bonus (+10 PLC)
+        </button>
+
+        <div class="glass-card p-6 rounded-3xl border border-white/5">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">👥</div>
+                <div>
+                    <h3 class="text-sm font-bold">Dostlarını Dəvət Et</h3>
+                    <p class="text-[10px] text-slate-500 italic">Hər uğurlu dəvət üçün +50 PLC</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-2">
+                <input type="text" id="referralLink" readonly value="https://t.me/palbonus_robot?start=loading" 
+                    class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-[11px] text-slate-400 font-mono outline-none">
+                <button onclick="copyRef()" class="bg-white text-black px-5 py-3 rounded-xl text-[11px] font-bold hover:bg-slate-200 transition-colors">
+                    KOPYALA
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -23,74 +75,51 @@
         const db = getFirestore(app);
         const tg = window.Telegram.WebApp;
 
-        tg.expand(); // Saytı tam ekran edir
-
-        async function initApp() {
-            const user = tg.initDataUnsafe?.user || { id: "test_user", first_name: "Qonaq" };
+        async function init() {
+            tg.expand();
+            const user = tg.initDataUnsafe?.user || { id: 12345, first_name: "Developer" };
             const userRef = doc(db, "users", user.id.toString());
             const userSnap = await getDoc(userRef);
 
+            let balance = 0;
             if (!userSnap.exists()) {
-                await setDoc(userRef, {
-                    name: user.first_name,
-                    balance: 0,
-                    id: user.id
-                });
-                renderUI(user.id, user.first_name, 0);
+                await setDoc(userRef, { name: user.first_name, balance: 0, id: user.id });
             } else {
-                const data = userSnap.data();
-                renderUI(user.id, data.name, data.balance);
+                balance = userSnap.data().balance;
             }
-        }
 
-        function renderUI(id, name, balance) {
-            document.getElementById('userName').innerText = name;
-            document.getElementById('userId').innerText = `ID: ${id}`;
             document.getElementById('userBalance').innerText = balance.toFixed(2);
+            document.getElementById('userId').innerText = `ID: ${user.id}`;
+            document.getElementById('referralLink').value = `https://t.me/palbonus_robot?start=${user.id}`;
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
         }
 
         window.claimBonus = async () => {
-            const user = tg.initDataUnsafe?.user || { id: "test_user" };
+            const user = tg.initDataUnsafe?.user || { id: 12345 };
             const userRef = doc(db, "users", user.id.toString());
-            await updateDoc(userRef, { balance: increment(10) });
+            const btn = document.getElementById('claimBtn');
             
+            btn.disabled = true;
+            btn.innerText = "İŞLƏNİR...";
+
+            await updateDoc(userRef, { balance: increment(10) });
             const newSnap = await getDoc(userRef);
             document.getElementById('userBalance').innerText = newSnap.data().balance.toFixed(2);
-            alert("Təbriklər! +10 PLC balansınıza əlavə edildi.");
+            
+            btn.innerText = "ALINDI ✓";
+            btn.classList.replace('gold-gradient', 'bg-slate-700');
+            btn.style.color = 'white';
         };
 
-        initApp();
+        window.copyRef = () => {
+            const link = document.getElementById('referralLink');
+            link.select();
+            document.execCommand('copy');
+            tg.showPopup({ message: "Referal linkiniz kopyalandı! Dostlarınıza göndərə bilərsiniz." });
+        };
+
+        init();
     </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-        body { background: #0b0f1a; color: white; font-family: 'Poppins', sans-serif; }
-        .gold-glow { box-shadow: 0 0 25px rgba(245, 158, 11, 0.2); }
-        .coin-spin { animation: rotate 5s linear infinite; }
-        @keyframes rotate { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
-    </style>
-</head>
-<body class="flex items-center justify-center min-h-screen p-6">
-
-    <div id="loading" class="text-yellow-500 font-bold animate-pulse">YÜKLƏNİR...</div>
-
-    <div id="app" class="hidden w-full max-w-md">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-yellow-500 tracking-widest" style="font-family: 'Orbitron';">PALBONUS</h1>
-            <div id="userId" class="bg-slate-800 px-4 py-1 rounded-full text-xs text-slate-400 border border-slate-700"></div>
-        </div>
-
-        <div class="bg-slate-900/50 border border-yellow-500/20 p-8 rounded-[3rem] text-center gold-glow mb-6">
-            <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 coin-spin shadow-lg shadow-yellow-500/50">
-                <span class="text-4xl font-bold text-black">P</span>
-            </div>
-            <p class="text-slate-400 text-sm">Xoş gəldin, <span id="userName" class="text-white font-semibold"></span></p>
-            <div class="text-5xl font-bold mt-2"><span id="userBalance">0</span> <span class="text-lg text-yellow-500">PLC</span></div>
-        </div>
-
-        <button onclick="claimBonus()" class="w-full bg-yellow-500 text-black font-bold py-4 rounded-2xl hover:bg-yellow-400 active:scale-95 transition-all mb-4">GÜNDƏLİK BONUSU AL (+10)</button>
-    </div>
-
 </body>
 </html>
