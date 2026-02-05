@@ -3,89 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Palbonus | Full App</title>
+    <title>Palbonus Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
-        
-        body { 
-            background: #05070a; 
-            color: #e2e8f0; 
-            font-family: 'Poppins', sans-serif; 
-            overflow: hidden; 
-            touch-action: manipulation;
-            user-select: none;
-        }
-
+        body { background: #05070a; color: #e2e8f0; font-family: 'Poppins', sans-serif; overflow: hidden; touch-action: manipulation; }
         .gold-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(245, 158, 11, 0.1); }
-        
-        /* Coin Animasiyası */
-        .coin-tap { transition: transform 0.05s ease; }
-        .coin-tap:active { transform: scale(0.90); }
-
-        /* Uçan xal animasiyası */
-        @keyframes float-up {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-120px); }
-        }
-        .tap-anim {
-            position: fixed;
-            pointer-events: none;
-            color: #f59e0b;
-            font-weight: 800;
-            font-size: 1.5rem;
-            animation: float-up 0.6s ease-out forwards;
-            z-index: 50;
-        }
-
-        .energy-glow { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+        .tab-active { background: #f59e0b !important; color: black !important; font-weight: bold; }
+        .hidden { display: none; }
+        @keyframes float-up { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+        .tap-anim { position: fixed; pointer-events: none; color: #f59e0b; font-weight: 800; font-size: 1.5rem; animation: float-up 0.6s ease-out forwards; z-index: 50; }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen p-5">
+<body class="flex flex-col items-center min-h-screen p-4">
 
-    <div id="loading" class="mt-20 text-yellow-500 font-bold animate-pulse tracking-widest">SİSTEM YÜKLƏNİR...</div>
+    <div class="w-full max-w-md flex justify-between items-center mb-6">
+        <h1 class="text-xl font-bold text-yellow-500 tracking-widest" style="font-family: 'Orbitron';">PALBONUS</h1>
+        <div id="userId" class="text-[10px] text-yellow-500/50 font-mono"></div>
+    </div>
 
-    <div id="app" class="hidden w-full max-w-md">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold text-yellow-500 tracking-[0.2em]" style="font-family: 'Orbitron';">PALBONUS</h1>
-            <div id="userId" class="bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-lg text-[9px] border border-yellow-500/20 font-mono"></div>
-        </div>
+    <div class="w-full max-w-md flex justify-around mb-6 bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
+        <button id="tab-game" onclick="switchTab('game')" class="tab-active flex-1 text-[10px] uppercase py-2.5 rounded-xl transition-all">Oyun</button>
+        <button id="tab-tasks" onclick="switchTab('tasks')" class="flex-1 text-[10px] uppercase py-2.5 rounded-xl text-slate-400 transition-all">Tapşırıqlar</button>
+        <button id="tab-friends" onclick="switchTab('friends')" class="flex-1 text-[10px] uppercase py-2.5 rounded-xl text-slate-400 transition-all">Dostlar</button>
+    </div>
 
-        <div class="glass-card p-8 rounded-[2.5rem] text-center mb-4 relative overflow-hidden shadow-2xl">
-            <div id="coin" onclick="handleTap(event)" class="w-40 h-40 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 coin-tap shadow-[0_0_60px_rgba(245,158,11,0.2)] cursor-pointer">
+    <div id="sec-game" class="w-full max-w-md space-y-4">
+        <div class="glass-card p-8 rounded-[2.5rem] text-center relative overflow-hidden shadow-2xl">
+            <div id="coin" onclick="handleTap(event)" class="w-44 h-44 gold-gradient rounded-full flex items-center justify-center mx-auto mb-6 active:scale-90 transition-transform cursor-pointer shadow-[0_0_50px_rgba(245,158,11,0.2)]">
                 <span class="text-7xl font-bold text-black select-none">P</span>
             </div>
-            
-            <p class="text-slate-500 text-[10px] uppercase tracking-[0.3em] mb-1 font-semibold">Balansınız</p>
+            <p class="text-slate-500 text-[10px] uppercase tracking-[0.2em] mb-1">Cari Balans</p>
             <div class="text-5xl font-bold text-white tracking-tighter mb-4">
-                <span id="userBalance">0.00</span> <span class="text-lg text-yellow-500 font-light ml-1">PLC</span>
+                <span id="balanceText">0.00</span> <span class="text-lg text-yellow-500">PLC</span>
             </div>
-
-            <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-white/5 mb-2 p-[2px]">
-                <div id="energyBar" class="gold-gradient h-full rounded-full transition-all duration-300 energy-glow" style="width: 100%;"></div>
+            <div class="w-full bg-slate-900 rounded-full h-2.5 p-0.5 border border-white/5">
+                <div id="energyBar" class="gold-gradient h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
             </div>
-            <div class="flex justify-between items-center px-1">
-                <span class="text-[9px] text-slate-500 font-bold">ENERJİ</span>
-                <span class="text-[10px] text-yellow-500 font-bold"><span id="currentEnergy">1000</span> / <span id="maxEnergy">1000</span></span>
+            <div class="flex justify-between mt-2 px-1 text-[9px] font-bold">
+                <span class="text-slate-500">ENERJİ</span>
+                <span class="text-yellow-500"><span id="energyText">1000</span> / 1000</span>
             </div>
         </div>
+    </div>
 
-        <button onclick="claimDaily()" id="dailyBtn" class="w-full bg-slate-800/50 hover:bg-slate-800 text-yellow-500 font-bold py-4 rounded-2xl mb-4 border border-yellow-500/10 transition-all text-xs uppercase tracking-widest">
-            🎁 Gündəlik Bonus (+10 PLC)
-        </button>
-
-        <div class="glass-card p-5 rounded-3xl border border-white/5">
-            <div class="flex items-center gap-3 mb-3">
-                <span class="text-lg">👥</span>
-                <h3 class="text-xs font-bold uppercase tracking-wider">Referal Proqramı</h3>
+    <div id="sec-tasks" class="w-full max-w-md hidden space-y-3">
+        <h2 class="text-sm font-bold mb-4 uppercase text-yellow-500">Mövcud Tapşırıqlar</h2>
+        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-blue-500">
+            <div>
+                <p class="text-xs font-bold">Telegram Kanalı</p>
+                <p class="text-[10px] text-blue-400">+100 PLC</p>
             </div>
+            <button onclick="doTask('tg', 100)" class="bg-blue-600 px-4 py-2 rounded-xl text-[10px] font-bold">Qatıl</button>
+        </div>
+        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-l-4 border-l-red-500">
+            <div>
+                <p class="text-xs font-bold">YouTube Abunə</p>
+                <p class="text-[10px] text-red-400">+150 PLC</p>
+            </div>
+            <button onclick="doTask('yt', 150)" class="bg-red-600 px-4 py-2 rounded-xl text-[10px] font-bold">İzlə</button>
+        </div>
+    </div>
+
+    <div id="sec-friends" class="w-full max-w-md hidden space-y-4">
+        <div class="glass-card p-6 rounded-3xl text-center">
+            <h3 class="text-sm font-bold mb-2">Dostlarını Dəvət Et</h3>
+            <p class="text-[10px] text-slate-500 mb-4">Hər gələn dost üçün 50 PLC qazan!</p>
             <div class="flex gap-2">
-                <input type="text" id="refLink" readonly class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-[10px] text-slate-400 font-mono outline-none">
-                <button onclick="copyRef()" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-extrabold active:scale-95 transition-transform uppercase">Kopyala</button>
+                <input type="text" id="refLink" readonly class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-2 text-[10px] text-slate-400 font-mono">
+                <button onclick="copyLink()" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-bold">KOPYALA</button>
             </div>
-            <p class="text-[9px] text-slate-500 mt-2 italic text-center">Hər dəvət üçün +50 PLC qazanın!</p>
         </div>
     </div>
 
@@ -106,97 +95,69 @@
         const db = getFirestore(app);
         const tg = window.Telegram.WebApp;
 
-        let balance = 0;
-        let energy = 1000;
-        let maxEnergy = 1000;
-        let userId = "";
+        let balance = 0, energy = 1000, userId = "";
 
         async function init() {
             tg.expand();
-            const user = tg.initDataUnsafe?.user || { id: "12345", first_name: "User" };
+            const user = tg.initDataUnsafe?.user || { id: "test_dev", first_name: "Dev" };
             userId = user.id.toString();
-
+            
             const userRef = doc(db, "users", userId);
-            const userSnap = await getDoc(userRef);
+            const snap = await getDoc(userRef);
 
-            if (!userSnap.exists()) {
-                await setDoc(userRef, { name: user.first_name, balance: 0, energy: 1000, maxEnergy: 1000 });
-                balance = 0;
-                energy = 1000;
+            if (!snap.exists()) {
+                await setDoc(userRef, { name: user.first_name, balance: 0, energy: 1000 });
             } else {
-                const data = userSnap.data();
-                balance = data.balance || 0;
-                energy = data.energy || 1000;
-                maxEnergy = data.maxEnergy || 1000;
+                balance = snap.data().balance || 0;
+                energy = snap.data().energy || 1000;
             }
-
             updateUI();
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-
-            // Enerji bərpası (Hər 2 saniyədə +1)
-            setInterval(() => {
-                if (energy < maxEnergy) {
-                    energy++;
-                    updateUI();
-                }
-            }, 2000);
         }
+
+        window.switchTab = (tab) => {
+            ["game", "tasks", "friends"].forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-${t}`).classList.add('text-slate-400');
+            });
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+        };
+
+        window.handleTap = async (e) => {
+            if (energy <= 0) return;
+            balance += 0.01; energy -= 1;
+            updateUI();
+            
+            const p = document.createElement('div');
+            p.innerText = '+0.01'; p.className = 'tap-anim';
+            p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 600);
+
+            await updateDoc(doc(db, "users", userId), { balance: increment(0.01), energy: increment(-1) });
+        };
+
+        window.doTask = async (type, reward) => {
+            alert("Tapşırıq yoxlanılır...");
+            balance += reward;
+            updateUI();
+            await updateDoc(doc(db, "users", userId), { balance: increment(reward) });
+        };
+
+        window.copyLink = () => {
+            const link = document.getElementById('refLink');
+            link.select(); document.execCommand('copy');
+            tg.showPopup({ message: "Link kopyalandı!" });
+        };
 
         function updateUI() {
-            document.getElementById('userBalance').innerText = balance.toFixed(2);
-            document.getElementById('currentEnergy').innerText = energy;
-            document.getElementById('maxEnergy').innerText = maxEnergy;
-            document.getElementById('userId').innerText = `ID: ${userId}`;
+            document.getElementById('balanceText').innerText = balance.toFixed(2);
+            document.getElementById('energyText').innerText = energy;
+            document.getElementById('energyBar').style.width = (energy / 10) + '%';
             document.getElementById('refLink').value = `https://t.me/palbonus_robot?start=${userId}`;
-            
-            const energyPercent = (energy / maxEnergy) * 100;
-            document.getElementById('energyBar').style.width = `${energyPercent}%`;
+            document.getElementById('userId').innerText = `ID: ${userId}`;
         }
-
-        window.handleTap = async (event) => {
-            if (energy <= 0) return;
-
-            // Xal animasiyası
-            const tap = document.createElement('div');
-            tap.innerText = '+0.01';
-            tap.className = 'tap-anim';
-            tap.style.left = `${event.clientX}px`;
-            tap.style.top = `${event.clientY}px`;
-            document.body.appendChild(tap);
-            setTimeout(() => tap.remove(), 600);
-
-            // Lokal hesab
-            balance += 0.01;
-            energy -= 1;
-            updateUI();
-
-            // Firebase Update
-            const userRef = doc(db, "users", userId);
-            await updateDoc(userRef, { 
-                balance: increment(0.01),
-                energy: increment(-1)
-            });
-        };
-
-        window.claimDaily = async () => {
-            const btn = document.getElementById('dailyBtn');
-            btn.disabled = true;
-            btn.innerText = "ALINDI ✓";
-            
-            const userRef = doc(db, "users", userId);
-            await updateDoc(userRef, { balance: increment(10) });
-            balance += 10;
-            updateUI();
-        };
-
-        window.copyRef = () => {
-            const link = document.getElementById('refLink');
-            link.select();
-            document.execCommand('copy');
-            tg.showMainButton.setText("LİNK KOPYALANDI").show();
-            setTimeout(() => tg.showMainButton.hide(), 2000);
-        };
 
         init();
     </script>
